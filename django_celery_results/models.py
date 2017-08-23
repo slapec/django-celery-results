@@ -14,7 +14,7 @@ TASK_STATE_CHOICES = sorted(zip(ALL_STATES, ALL_STATES))
 
 
 @python_2_unicode_compatible
-class TaskResult(models.Model):
+class AbstractTaskResult(models.Model):
     """Task result/status."""
 
     task_id = models.CharField(
@@ -38,10 +38,15 @@ class TaskResult(models.Model):
     hidden = models.BooleanField(editable=False, default=False, db_index=True)
     meta = models.TextField(null=True, default=None, editable=False)
 
+    task_name = models.CharField(null=True, editable=False, max_length=256, db_index=True)
+    task_args = models.TextField(null=True, editable=False)
+    task_kwargs = models.TextField(null=True, editable=False)
+
     objects = managers.TaskResultManager()
 
     class Meta:
         """Table information."""
+        abstract = True
 
         verbose_name = _('task result')
         verbose_name_plural = _('task results')
@@ -58,3 +63,7 @@ class TaskResult(models.Model):
 
     def __str__(self):
         return '<Task: {0.task_id} ({0.status})>'.format(self)
+
+
+class TaskResult(AbstractTaskResult):
+    pass

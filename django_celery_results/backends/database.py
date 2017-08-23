@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
+import json
 from base64 import b64encode, b64decode
 
 from celery.backends.base import BaseDictBackend
@@ -22,11 +23,23 @@ class DatabaseBackend(BaseDictBackend):
             'children': self.current_task_children(request),
         })
 
+        task_name = task_args = task_kwargs = None
+        if request:
+            if hasattr(request, 'args'):
+                task_args = json.dumps(request.args)
+            if hasattr(request, 'kwargs'):
+                task_kwargs = json.dumps(request.kwargs)
+            if request.task:
+                task_name = str(request.task)
+
         self.TaskModel._default_manager.store_result(
             content_type, content_encoding,
             task_id, result, status,
             traceback=traceback,
             meta=meta,
+            task_name=task_name,
+            task_args=task_args,
+            task_kwargs=task_kwargs
         )
         return result
 
